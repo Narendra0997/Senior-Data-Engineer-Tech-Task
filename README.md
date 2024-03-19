@@ -23,11 +23,11 @@ You may opt to use ELT processes instead of ETL. If you do, use your personal ju
 
 1. **Extract**: Retrieve all posts and user data from the `/posts` and `/users` endpoints of JSONPlaceholder API.
 2. **Transform**:
- - Parse any embedded JSON structures into a format suitable for your database.
- - Add a computed `status` field to posts: if a post body exceeds 100 characters, set `status` to `lengthy`, and `concise` otherwise.
- - Combine posts with user details based on `userId` to create enriched post records.
+   - Parse any embedded JSON structures into a format suitable for your database.
+   - Add a computed `status` field to posts: if a post body exceeds 100 characters, set `status` to `lengthy`, and `concise` otherwise.
+   - Combine posts with user details based on `userId` to create enriched post records.
 3. **Load**:
- - In your database, load the data into table(s) prefixed with your initials, e.g. John Smith will create tables prefixed `js_` 
+   - In your database, load the data into table(s) prefixed with your initials, e.g. John Smith will create tables prefixed `js_` 
 
 ### Analysis Challenge
 Write SQL queries to answer the following questions:

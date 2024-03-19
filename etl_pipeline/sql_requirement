@@ -1,0 +1,90 @@
+import sqlite3
+# this the file to analysis/run the sql scripts using pandas and can be achive the samne as sql commands  in python.
+def get_top_users_with_most_posts(conn, limit=5):
+    """
+    Retrieve the top users with the highest number of posts.
+
+    Args:
+        conn (sqlite3.Connection): SQLite database connection.
+        limit (int): Number of top users to retrieve. Default is 5.
+
+    Returns:
+        list: A list of tuples containing user_id and the number of posts.
+    """
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT user_id, COUNT(*) AS num_posts
+        FROM np_posts
+        GROUP BY user_id
+        ORDER BY num_posts DESC
+        LIMIT ?;
+    """, (limit,))
+    return cur.fetchall()
+
+def get_avg_post_lengths_for_users(conn, user_ids):
+    """
+    Calculate the average post length for each user.
+
+    Args:
+        conn (sqlite3.Connection): SQLite database connection.
+        user_ids (list): List of user IDs.
+
+    Returns:
+        dict: A dictionary mapping user IDs to their average post lengths.
+    """
+    avg_post_lengths = {}
+    cur = conn.cursor()
+    for user_id in user_ids:
+        cur.execute("""
+            SELECT AVG(LENGTH(body)) AS avg_post_length
+            FROM np_posts
+            WHERE user_id = ?;
+        """, (user_id,))
+        avg_post_length = cur.fetchone()[0]
+        avg_post_lengths[user_id] = avg_post_length
+    return avg_post_lengths
+
+def get_day_with_most_lengthy_posts(conn):
+    """
+    Identify the day of the week when the most `lengthy` posts are created.
+
+    Args:
+        conn (sqlite3.Connection): SQLite database connection.
+
+    Returns:
+        str: Day of the week with the most lengthy posts.
+    """
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT STRFTIME('%w', created_at) AS day_of_week, COUNT(*) AS num_lengthy_posts
+        FROM np_posts
+        WHERE status = 'lengthy'
+        GROUP BY day_of_week
+        ORDER BY num_lengthy_posts DESC
+        LIMIT 1;
+    """)
+    return cur.fetchone()[0]
+
+if __name__ == "__main__":
+    # Connect to SQLite database
+    conn = sqlite3.connect('Essencemediacom.db')
+
+    # Task 1: Find the top 5 users with the highest number of posts
+    top_users = get_top_users_with_most_posts(conn)
+    print("Top 5 users with the highest number of posts:")
+    for user in top_users:
+        print("User ID:", user[0], "| Number of Posts:", user[1])
+
+    # Task 2: For each of these top users, calculate the average post length
+    user_ids = [user[0] for user in top_users]
+    avg_post_lengths = get_avg_post_lengths_for_users(conn, user_ids)
+    print("\nAverage post lengths for the top 5 users:")
+    for user_id, avg_length in avg_post_lengths.items():
+        print("User ID:", user_id, "| Average Post Length:", avg_length)
+
+    # Task 3: Identify the day of the week when the most `lengthy` posts are created
+    most_lengthy_day = get_day_with_most_lengthy_posts(conn)
+    print("\nDay of the week with the most lengthy posts:", most_lengthy_day)
+
+    # Close connection
+    conn.close()
